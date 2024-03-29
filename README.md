@@ -13,6 +13,8 @@
 
 ## About
 
-This is "N Body Simulation". Specifically, the collisions and gravity of particles in a limited area are simulated.
+This is "N Body Simulation". Specifically, the collisions and gravity of particles in a limited area are simulated. The UI has simulation settings.
 
-The UI has simulation settings.
+## Demo
+
+[![video_preview](https://img.youtube.com/vi/EjqmfDeH_B8/0.jpg)](https://www.youtube.com/watch?v=EjqmfDeH_B8)

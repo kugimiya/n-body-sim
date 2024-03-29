@@ -1,40 +1,156 @@
-import { CellularAutomata } from './CellularAutomata';
-import { Window, CanvasRenderingContext2D } from 'skia-canvas'
+import { VerletWorld } from './VerletWorld';
+import { VerletWorldDrawer } from './VerletWorldDrawer';
 
-const scale = 6;
-const fieldWidth = 128;
+// init values
+let worldSize = 512;
+let objectsCount = 512;
+let gridRatio = 6;
+let baseMass = 25;
+let massToRadiusRatio = 30;
 
-const DrawWindow = new Window(fieldWidth * scale, fieldWidth * scale);
-const GameOfLife = new CellularAutomata(fieldWidth, () => Math.random() > 0.5 ? 1 : 0);
-GameOfLife.rules.push((cx, cy, prev) => {
-  const neighbours = GameOfLife.getNeighbours(1, cx, cy);
-  const aliveCount = neighbours.filter((_) => _.value === 1).length;
+// setup elements
+const drawPane = document.getElementById('drawPane');
 
-  if (aliveCount === 3 && prev === 0) {
-    return 1;
+const resetSettingBtn = document.getElementById('reset-settings');
+const stopSimBtn = document.getElementById('stop-sim');
+const restartSimBtn = document.getElementById('restart-sim');
+const pauseSimBtn = document.getElementById('pause-sim');
+const unPauseSimBtn = document.getElementById('uspause-sim');
+
+const worldSizeInput = document.getElementById('worldSize') as HTMLInputElement;
+const objectsCountInput = document.getElementById('objectsCount') as HTMLInputElement;
+const gridRatioInput = document.getElementById('gridRatio') as HTMLInputElement;
+const baseMassInput = document.getElementById('baseMass') as HTMLInputElement;
+const massToRadiusRatioInput = document.getElementById('massToRadiusRatio') as HTMLInputElement;
+
+// reset settings func
+const reset = () => {
+  worldSize = 512;
+  objectsCount = 512;
+  gridRatio = 6;
+  baseMass = 25;
+  massToRadiusRatio = 30;
+
+  worldSizeInput.value = worldSize.toString();
+  objectsCountInput.value = objectsCount.toString();
+  gridRatioInput.value = gridRatio.toString();
+  baseMassInput.value = baseMass.toString();
+  massToRadiusRatioInput.value = massToRadiusRatio.toString();
+};
+reset();
+
+// setup dbg
+const dbg = document.createElement('pre');
+dbg.style.position = 'absolute';
+dbg.style.zIndex = '1';
+dbg.style.margin = '0';
+drawPane.appendChild(dbg);
+
+// setup scene
+const canvas = document.createElement('canvas');
+canvas.style.position = 'absolute';
+canvas.width = 768;
+canvas.height = 768;
+canvas.style.border = '1px solid black';
+drawPane.appendChild(canvas);
+
+// setup simulator
+let world = new VerletWorld(objectsCount, worldSize, gridRatio, baseMass, massToRadiusRatio);
+let drawer = new VerletWorldDrawer(canvas.getContext('2d'), world);
+
+// start loop
+let shouldStop = false;
+let shouldPauseSim = false;
+let averageTime = 0;
+const animate = () => {
+  const time = Date.now();
+  if (!shouldPauseSim) {
+    world.update();
   }
+  drawer.draw();
+  const finalTime = Date.now() - time;
+  averageTime = Math.round(1000 * ((averageTime + finalTime) / 2)) / 1000;
+  const averageVelocity = world.objects.reduce((acc, cur) => (acc + cur.velocityLength) / 2, 0);
 
-  if (aliveCount === 3 || aliveCount === 2) {
-    if (prev === 1) {
-      return 1;
-    }
+  dbg.textContent = [
+    `Average frameTime: ${averageTime}ms`,
+    `Current frameTime: ${finalTime}ms`,
+    `Active chunks: ${world.grid.length}`,
+    `Objects: ${world.objects.length}`,
+    `Average velocity: ${Math.round(1000 * averageVelocity) / 1000}`
+  ].join('\n');
+
+  if (!shouldStop) {
+    requestAnimationFrame(animate);
   }
+}
 
-  return 0;
+// setup form
+(document.getElementById('canvasW') as HTMLInputElement).addEventListener('change', (ev) => {
+  canvas.width = (ev.target as unknown as { value: number }).value;
 });
 
-let lastDraw = Date.now() + 1;
-DrawWindow.title = 'Output window';
-DrawWindow.on("draw", (e) => {
-  const ctx = e.target.canvas.getContext("2d") as CanvasRenderingContext2D;
-  let drawsCallsCount = 0;
-  GameOfLife.tick();
-  GameOfLife.diff.forEach(({ posX, posY, value }) => {
-    ctx.fillStyle = `rgba(${value ? 0 : 255},${value ? 0 : 255},${value ? 0 : 255},1)`;
-    ctx.fillRect(posX * scale, posY * scale, scale, scale);
-    drawsCallsCount += 1;
-  });
-
-  DrawWindow.title = `f: ${e.frame}; t: ${Date.now() - lastDraw}; d: ${drawsCallsCount}`;
-  lastDraw = Date.now();
+(document.getElementById('canvasH') as HTMLInputElement).addEventListener('change', (ev) => {
+  canvas.height = (ev.target as unknown as { value: number }).value;
 });
+
+resetSettingBtn.addEventListener('click', () => {
+  reset();
+});
+
+stopSimBtn.addEventListener('click', () => {
+  shouldStop = true;
+});
+
+pauseSimBtn.addEventListener('click', () => {
+  shouldPauseSim = true;
+});
+
+unPauseSimBtn.addEventListener('click', () => {
+  shouldPauseSim = false;
+});
+
+restartSimBtn.addEventListener('click', () => {
+  shouldStop = true;
+
+  setTimeout(() => {
+    worldSize = Number(worldSizeInput.value);
+    objectsCount = Number(objectsCountInput.value);
+    gridRatio = Number(gridRatioInput.value);
+    baseMass = Number(baseMassInput.value);
+    massToRadiusRatio = Number(massToRadiusRatioInput.value);
+
+    world = new VerletWorld(objectsCount, worldSize, gridRatio, baseMass, massToRadiusRatio);
+    drawer = new VerletWorldDrawer(canvas.getContext('2d'), world);
+    shouldStop = false;
+    averageTime = 0;
+    animate();
+  }, 1000);
+});
+
+// setup interactivity
+let isMove = false;
+canvas.addEventListener('mousedown', () => {
+  isMove = true;
+});
+canvas.addEventListener('mouseup', () => {
+  isMove = false;
+});
+canvas.addEventListener('mouseleave', () => {
+  isMove = false;
+});
+canvas.addEventListener('mousemove', (ev) => {
+  if (isMove) {
+    drawer.offsetX += ev.movementX;
+    drawer.offsetY += ev.movementY;
+  }
+});
+canvas.addEventListener('wheel', (ev) => {
+  // offsetX
+  const factor = ev.deltaY > 0 ? -0.1 : 0.1
+  drawer.scaleFactor += factor;
+  drawer.offsetX += (ev.offsetX * (factor * -1));
+  drawer.offsetY += (ev.offsetY * (factor * -1));
+});
+
+animate();

@@ -4,11 +4,13 @@
     "sourceMap": true,
     "noImplicitAny": true,
     "module": "commonjs",
-    "target": "es5",
+    "target": "ES2023",
     "allowJs": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "downlevelIteration": true
   },
   "include": [
-    "src/index.ts"
+    "src/old_index.ts"
   ]
 }

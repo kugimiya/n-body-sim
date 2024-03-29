@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>n body sim</title>
+    <style>
+      * {
+        font-family: monospace;
+      }
+    </style>
+    <script type="text/javascript" src="https://unpkg.com/canvaskit-wasm@0.19.0/bin/canvaskit.js"></script>
+  </head>
+
+  <body>
+    <div style="display: flex; flex-direction: column; gap: 8px;">
+      <div>
+        <button id="reset-settings">reset settings</button>
+        <button id="stop-sim">stop sim</button>
+        <button id="pause-sim">pause sim</button>
+        <button id="uspause-sim">unpause sim</button>
+        <button id="restart-sim">restart sim</button>
+      </div>
+
+      <label for="worldSize">
+        <span style="width: 356px; display: inline-flex; justify-content: flex-end">size of "world":</span>
+        <input id="worldSize" type="number" />
+      </label>
+
+      <label for="objectsCount">
+        <span style="width: 356px; display: inline-flex; justify-content: flex-end">count of objects:</span>
+        <input id="objectsCount" type="number" />
+      </label>
+
+      <label for="gridRatio">
+        <span style="width: 356px; display: inline-flex; justify-content: flex-end">chunkSize-To-WorldSize-Ratio:</span>
+        <input id="gridRatio" type="number" />
+      </label>
+
+      <label for="baseMass">
+        <span style="width: 356px; display: inline-flex; justify-content: flex-end">base object mass:</span>
+        <input id="baseMass" type="number" />
+      </label>
+
+      <label for="massToRadiusRatio">
+        <span style="width: 356px; display: inline-flex; justify-content: flex-end">radius to mass ratio:</span>
+        <input id="massToRadiusRatio" type="number" />
+      </label>
+
+      <label for="canvasW">
+        <span style="width: 356px; display: inline-flex; justify-content: flex-end">canvas width:</span>
+        <input id="canvasW" type="range" min="10" max="5000" value="768" />
+      </label>
+
+      <label for="canvasH">
+        <span style="width: 356px; display: inline-flex; justify-content: flex-end">canvas height:</span>
+        <input id="canvasH" type="range" min="10" max="5000" value="768" />
+      </label>
+    </div>
+
+    <div id="drawPane" style="position: relative; margin-top: 8px">
+
+    </div>
+
+    <script src="<%= htmlWebpackPlugin.files.js[0] %>"></script>
+  </body>
+</html>

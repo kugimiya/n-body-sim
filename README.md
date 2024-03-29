@@ -1,18 +1,18 @@
-## skia + typescript = <3
+## N Body Simulation
 
-Thats boilerplate
+## Startup / Dev
 
-## Startup
+1. `yarn`
+2. `yarn watch`
+3. open `localhost:3000`
 
-1. `npm i`
-2. `npm run run`
-3. open `src/index.ts`
-4. great!
+## Build
+1. `yarn`
+2. `yarn build`
+3. look at `dist` dir
 
 ## About
 
-```typescript
-drawWindow.on("draw", (e) => {
-  // code here
-});
-```
+This is "N Body Simulation". Specifically, the collisions and gravity of particles in a limited area are simulated.
+
+The UI has simulation settings.
